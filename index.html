@@ -43,7 +43,6 @@
     </style>
 </head>
 <body>
-
     <div id="login-view">
         <div class="login-card">
             <img src="logo.png" alt="Logo" style="height: 60px; margin-bottom: 20px;">
@@ -162,8 +161,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         
-        // GLOBAL DATA STORE (Agar tidak error saat Edit HTML)
-        window.articlesCache = {};
+        window.articlesCache = {}; // Cache untuk menyimpan data agar edit tidak error
 
         var quill = new Quill('#editor-container', {
             theme: 'snow',
@@ -202,7 +200,7 @@
                     judul: document.getElementById('judul').value,
                     kategori: document.getElementById('kategori').value,
                     gambar: document.getElementById('gambar').value,
-                    isi: quill.root.innerHTML, // Simpan HTML
+                    isi: quill.root.innerHTML, 
                     tanggal: new Date().toLocaleDateString('id-ID'),
                     createdAt: new Date()
                 };
@@ -223,13 +221,11 @@
             onSnapshot(query(collection(db, "articles"), orderBy("createdAt", "desc")), (snapshot) => {
                 const tbody = document.querySelector('#articleTable tbody');
                 tbody.innerHTML = '';
-                // Reset cache
-                window.articlesCache = {};
+                window.articlesCache = {}; // Reset cache
 
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.data();
-                    // Simpan data di memori global berdasarkan ID
-                    window.articlesCache[docSnap.id] = data;
+                    window.articlesCache[docSnap.id] = data; // Simpan ke cache
 
                     tbody.innerHTML += `
                         <tr>
@@ -271,17 +267,14 @@
             });
         }
 
-        // FUNGSI EDIT YANG AMAN DARI BUG HTML
         window.editArtikel = (id) => {
-            const data = window.articlesCache[id]; // Ambil data dari memori
-            if (!data) return alert("Error: Data tidak ditemukan di memori");
+            const data = window.articlesCache[id];
+            if (!data) return alert("Error memuat data");
 
             document.getElementById('docId').value = id;
             document.getElementById('judul').value = data.judul;
             document.getElementById('kategori').value = data.kategori;
             document.getElementById('gambar').value = data.gambar;
-            
-            // Masukkan HTML ke Quill
             quill.root.innerHTML = data.isi;
             
             const btnSubmit = document.getElementById('btnSubmit');
@@ -294,7 +287,7 @@
 
         window.resetForm = () => {
             document.getElementById('articleForm').reset();
-            quill.setText(''); // Kosongkan editor
+            quill.setText('');
             document.getElementById('docId').value = ""; 
             const btnSubmit = document.getElementById('btnSubmit');
             btnSubmit.innerText = "Upload Artikel";
