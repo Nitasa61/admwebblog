@@ -7,48 +7,36 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        /* (Style css sama persis seperti sebelumnya) */
         :root { --primary-color: #2ecc71; --secondary-color: #27ae60; --dark-bg: #2c3e50; --light-bg: #ecf0f1; --white: #ffffff; --danger: #e74c3c; --warning: #f39c12; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); height: 100vh; overflow: hidden; }
 
-        /* --- STYLE LOGIN --- */
-        #login-view {
-            display: flex; justify-content: center; align-items: center; height: 100vh;
-            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
-        }
-        .login-card {
-            background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            width: 100%; max-width: 400px; text-align: center;
-        }
+        #login-view { display: flex; justify-content: center; align-items: center; height: 100vh; background: linear-gradient(135deg, var(--secondary-color), var(--primary-color)); }
+        .login-card { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 100%; max-width: 400px; text-align: center; }
         .login-card h2 { margin-bottom: 20px; color: var(--text-dark); }
         .login-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px; }
         .btn-login { width: 100%; padding: 12px; background: var(--secondary-color); color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-login:hover { background: var(--dark-bg); }
-
-        /* --- STYLE DASHBOARD (Awalnya disembunyikan) --- */
-        #dashboard-view { display: none; height: 100vh; }
         
+        #dashboard-view { display: none; height: 100vh; }
         .sidebar { width: 250px; background-color: var(--dark-bg); color: var(--white); display: flex; flex-direction: column; flex-shrink: 0;}
         .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid #34495e; }
         .menu { list-style: none; margin-top: 20px; } .menu li a { display: block; padding: 15px 20px; color: #bdc3c7; text-decoration: none; display: flex; gap: 10px; align-items: center; cursor: pointer;}
         .menu li a:hover { background: rgba(255,255,255,0.1); color: white; }
         
         .main-content { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
-        
         .admin-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
         .content-section { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px;}
         .form-group { margin-bottom: 15px; } .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
         .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
-        
         .btn-add { background: var(--primary-color); color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; width: 100%; }
         .btn-cancel { background: #95a5a6; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; display: none; margin-left: 10px;}
         
-        /* Table Styles Fixed */
         table { width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; } 
         th, td { padding: 15px; border-bottom: 1px solid #eee; text-align: left; word-wrap: break-word; overflow-wrap: break-word; }
         .btn-action { border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; color: white; margin-right: 5px; }
         .btn-edit { background: var(--warning); } .btn-delete { background: var(--danger); }
-
+        
         .notif-item { background: #f8f9fa; border-left: 4px solid var(--primary-color); padding: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: start; font-size: 0.9rem; }
         .notif-item.promo { border-color: var(--warning); background: #fcf3cf; }
         .btn-del-mini { background: #ff7675; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 0.7rem; margin-left: 5px; }
@@ -79,7 +67,7 @@
             </div>
             <ul class="menu">
                 <li><a href="#"><i class="fas fa-newspaper"></i> Dashboard</a></li>
-                <li><a href="blog.html" target="_blank"><i class="fas fa-external-link-alt"></i> Lihat Blog</a></li>
+                <li><a href="index.html" target="_blank"><i class="fas fa-external-link-alt"></i> Lihat Blog</a></li>
                 <li style="margin-top: 20px; border-top: 1px solid #34495e;">
                     <a onclick="logout()" style="color: #e74c3c;"><i class="fas fa-sign-out-alt"></i> Logout</a>
                 </li>
@@ -167,7 +155,6 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        // Tambahan: getAuth, signIn, signOut, onAuthStateChanged
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, updateDoc, orderBy, query } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
@@ -183,28 +170,21 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const auth = getAuth(app); // Initialize Auth
+        const auth = getAuth(app);
 
-        // === LOGIC AUTENTIKASI ===
-        
-        // 1. Cek Status Login (Realtime)
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // User Login -> Tampilkan Dashboard, Sembunyikan Login
                 document.getElementById('login-view').style.display = 'none';
                 document.getElementById('dashboard-view').style.display = 'flex';
                 document.getElementById('userEmailDisplay').innerText = user.email;
-                // Load data hanya jika sudah login
                 loadDataArtikel();
                 loadDataNotif();
             } else {
-                // User Logout -> Tampilkan Login, Sembunyikan Dashboard
                 document.getElementById('login-view').style.display = 'flex';
                 document.getElementById('dashboard-view').style.display = 'none';
             }
         });
 
-        // 2. Fungsi Login
         document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
@@ -213,7 +193,6 @@
 
             signInWithEmailAndPassword(auth, email, password)
                 .then((userCredential) => {
-                    // Berhasil login, onAuthStateChanged akan otomatis jalan
                     errorText.innerText = "";
                 })
                 .catch((error) => {
@@ -222,27 +201,17 @@
                 });
         });
 
-        // 3. Fungsi Logout (Global Scope)
         window.logout = () => {
-            signOut(auth).then(() => {
-                alert("Anda telah keluar.");
-            }).catch((error) => {
-                alert("Error logout");
-            });
+            signOut(auth).then(() => { alert("Anda telah keluar."); }).catch((error) => { alert("Error logout"); });
         }
 
-        // === LOGIC DATA (CRUD) - Dibungkus fungsi agar dipanggil setelah login ===
-
         function loadDataArtikel() {
-            // Logic Artikel
             const form = document.getElementById('articleForm');
             let isEditing = false;
             
-            // Hapus listener lama jika ada (untuk menghindari duplikasi jika re-login)
             const newForm = form.cloneNode(true);
             form.parentNode.replaceChild(newForm, form);
             
-            // Re-attach listener
             document.getElementById('articleForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const data = {
@@ -255,8 +224,9 @@
                 };
 
                 try {
-                    if (isEditing) {
-                        await updateDoc(doc(db, "articles", document.getElementById('docId').value), data);
+                    const docId = document.getElementById('docId').value;
+                    if (docId) {
+                        await updateDoc(doc(db, "articles", docId), data);
                         alert("Artikel Updated!");
                         resetForm();
                     } else {
@@ -267,7 +237,6 @@
                 } catch (error) { alert(error.message); }
             });
 
-            // Load Table
             onSnapshot(query(collection(db, "articles"), orderBy("createdAt", "desc")), (snapshot) => {
                 const tbody = document.querySelector('#articleTable tbody');
                 tbody.innerHTML = '';
@@ -290,7 +259,6 @@
         }
 
         function loadDataNotif() {
-            // Logic Notif
              const notifForm = document.getElementById('notifForm');
              const newNotifForm = notifForm.cloneNode(true);
              notifForm.parentNode.replaceChild(newNotifForm, notifForm);
@@ -324,7 +292,6 @@
             });
         }
 
-        // Global Window Functions
         window.editArtikel = (id, judul, kategori, gambar, isi) => {
             document.getElementById('docId').value = id;
             document.getElementById('judul').value = judul;
@@ -332,31 +299,17 @@
             document.getElementById('gambar').value = gambar;
             document.getElementById('isi').value = isi;
             
-            // Ubah UI menjadi mode Edit
             const btnSubmit = document.getElementById('btnSubmit');
             const btnCancel = document.getElementById('btnCancel');
             btnSubmit.innerText = "Update";
             btnSubmit.style.background = "#f39c12"; 
             btnCancel.style.display = "inline-block";
             document.getElementById('formTitle').innerText = "Edit Artikel";
-            
-            // Kita perlu set flag editing di scope artikel tapi susah akses variabel lokal. 
-            // Cara cepat: kita re-attach listener submit dengan logic cek tombol teks, atau simpan di atribut
-            // Di kode artikelForm di atas saya menggunakan var 'isEditing', tapi karena scope,
-            // kita ubah pendekatan submit handler di atas sedikit (cek tombol text) atau reset manual.
-            
-            // Untuk simplifikasi di versi ini, saya akan manipulasi DOM form listener di atas agar membaca 'docId'.
-            // (Lihat perbaikan logika di listener submit di atas: if (document.getElementById('docId').value) ...)
         }
 
-        // Perbaikan Logic Submit Handler agar support Edit
-        // Saya menimpa event listener di loadDataArtikel agar mengecek value docId
-        // Jadi kita tidak butuh variabel global isEditing yang rumit.
-        
         window.resetForm = () => {
             document.getElementById('articleForm').reset();
-            document.getElementById('docId').value = ""; // Kosongkan ID
-            
+            document.getElementById('docId').value = ""; 
             const btnSubmit = document.getElementById('btnSubmit');
             btnSubmit.innerText = "Upload Artikel";
             btnSubmit.style.background = "#2ecc71";
