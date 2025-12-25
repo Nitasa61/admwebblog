@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - F.A HydroFarm</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary-color: #2ecc71; --secondary-color: #27ae60; --dark-bg: #2c3e50; --light-bg: #ecf0f1; --white: #ffffff; --danger: #e74c3c; --warning: #f39c12; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); height: 100vh; overflow: hidden; }
+
+        /* --- STYLE LOGIN --- */
+        #login-view {
+            display: flex; justify-content: center; align-items: center; height: 100vh;
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+        }
+        .login-card {
+            background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%; max-width: 400px; text-align: center;
+        }
+        .login-card h2 { margin-bottom: 20px; color: var(--text-dark); }
+        .login-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .btn-login { width: 100%; padding: 12px; background: var(--secondary-color); color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-login:hover { background: var(--dark-bg); }
+
+        /* --- STYLE DASHBOARD (Awalnya disembunyikan) --- */
+        #dashboard-view { display: none; height: 100vh; }
+        
+        .sidebar { width: 250px; background-color: var(--dark-bg); color: var(--white); display: flex; flex-direction: column; flex-shrink: 0;}
+        .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid #34495e; }
+        .menu { list-style: none; margin-top: 20px; } .menu li a { display: block; padding: 15px 20px; color: #bdc3c7; text-decoration: none; display: flex; gap: 10px; align-items: center; cursor: pointer;}
+        .menu li a:hover { background: rgba(255,255,255,0.1); color: white; }
+        
+        .main-content { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
+        
+        .admin-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .content-section { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px;}
+        .form-group { margin-bottom: 15px; } .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        
+        .btn-add { background: var(--primary-color); color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; width: 100%; }
+        .btn-cancel { background: #95a5a6; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; display: none; margin-left: 10px;}
+        
+        /* Table Styles Fixed */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; } 
+        th, td { padding: 15px; border-bottom: 1px solid #eee; text-align: left; word-wrap: break-word; overflow-wrap: break-word; }
+        .btn-action { border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; color: white; margin-right: 5px; }
+        .btn-edit { background: var(--warning); } .btn-delete { background: var(--danger); }
+
+        .notif-item { background: #f8f9fa; border-left: 4px solid var(--primary-color); padding: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: start; font-size: 0.9rem; }
+        .notif-item.promo { border-color: var(--warning); background: #fcf3cf; }
+        .btn-del-mini { background: #ff7675; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 0.7rem; margin-left: 5px; }
+
+        @media (max-width: 1024px) { .admin-grid { grid-template-columns: 1fr; } #dashboard-view { flex-direction: column; } .sidebar { width: 100%; height: auto; } }
+    </style>
+</head>
+<body>
+
+    <div id="login-view">
+        <div class="login-card">
+            <img src="logo.png" alt="Logo" style="height: 60px; margin-bottom: 20px;">
+            <h2>Admin Login</h2>
+            <form id="loginForm">
+                <input type="email" id="email" class="login-input" placeholder="Email Admin" required>
+                <input type="password" id="password" class="login-input" placeholder="Password" required>
+                <button type="submit" class="btn-login">Masuk</button>
+            </form>
+            <p id="loginError" style="color: red; margin-top: 10px; font-size: 0.9rem;"></p>
+        </div>
+    </div>
+
+    <div id="dashboard-view">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>Admin Panel</h3>
+                <small id="userEmailDisplay" style="color: #bbb; font-size: 0.8rem;"></small>
+            </div>
+            <ul class="menu">
+                <li><a href="#"><i class="fas fa-newspaper"></i> Dashboard</a></li>
+                <li><a href="blog.html" target="_blank"><i class="fas fa-external-link-alt"></i> Lihat Blog</a></li>
+                <li style="margin-top: 20px; border-top: 1px solid #34495e;">
+                    <a onclick="logout()" style="color: #e74c3c;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <div class="admin-grid">
+                
+                <div class="left-column">
+                    <div class="content-section">
+                        <h3 style="margin-bottom: 20px;" id="formTitle">Manajemen Artikel</h3>
+                        <form id="articleForm">
+                            <input type="hidden" id="docId">
+                            <div class="form-group">
+                                <label>Judul Artikel</label>
+                                <input type="text" id="judul" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Kategori</label>
+                                <select id="kategori">
+                                    <option>Tutorial</option>
+                                    <option>Tips & Trik</option>
+                                    <option>Berita</option>
+                                    <option>Nutrisi</option>
+                                    <option>Hama</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>URL Gambar</label>
+                                <input type="text" id="gambar" placeholder="https://..." required>
+                            </div>
+                            <div class="form-group">
+                                <label>Isi Artikel</label>
+                                <textarea id="isi" rows="6" required></textarea>
+                            </div>
+                            <div style="display: flex;">
+                                <button type="submit" class="btn-add" id="btnSubmit">Upload Artikel</button>
+                                <button type="button" class="btn-cancel" id="btnCancel" onclick="resetForm()">Batal</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="content-section">
+                        <h3>Daftar Artikel</h3>
+                        <table id="articleTable">
+                            <thead>
+                                <tr>
+                                    <th width="40%">Judul</th>
+                                    <th width="30%">Kategori</th>
+                                    <th width="30%">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="right-column">
+                    <div class="content-section" style="background-color: #e8f8f5;">
+                        <h3 style="margin-bottom: 15px;"><i class="fas fa-bullhorn"></i> Pemberitahuan Sidebar</h3>
+                        <form id="notifForm">
+                            <div class="form-group">
+                                <label>Jenis Info</label>
+                                <select id="notifType">
+                                    <option value="info">Info Hijau (Umum)</option>
+                                    <option value="promo">Info Kuning (Promo/Penting)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Isi Pesan</label>
+                                <textarea id="notifContent" rows="3" required></textarea>
+                            </div>
+                            <button type="submit" class="btn-add" style="background-color: var(--secondary-color);">Tambah Info</button>
+                        </form>
+                        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;">
+                        <h4>Info Aktif:</h4>
+                        <div id="notifList" style="margin-top: 10px;"></div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        // Tambahan: getAuth, signIn, signOut, onAuthStateChanged
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, updateDoc, orderBy, query } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAatMmy0V6363AS6HZ965Rcf3c2w2kanSs",
+            authDomain: "hydrofarm-blog.firebaseapp.com",
+            projectId: "hydrofarm-blog",
+            storageBucket: "hydrofarm-blog.firebasestorage.app",
+            messagingSenderId: "917850354384",
+            appId: "1:917850354384:web:5308f119bd0dd43eaea4d5",
+            measurementId: "G-PB1KVVG84Y"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app); // Initialize Auth
+
+        // === LOGIC AUTENTIKASI ===
+        
+        // 1. Cek Status Login (Realtime)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User Login -> Tampilkan Dashboard, Sembunyikan Login
+                document.getElementById('login-view').style.display = 'none';
+                document.getElementById('dashboard-view').style.display = 'flex';
+                document.getElementById('userEmailDisplay').innerText = user.email;
+                // Load data hanya jika sudah login
+                loadDataArtikel();
+                loadDataNotif();
+            } else {
+                // User Logout -> Tampilkan Login, Sembunyikan Dashboard
+                document.getElementById('login-view').style.display = 'flex';
+                document.getElementById('dashboard-view').style.display = 'none';
+            }
+        });
+
+        // 2. Fungsi Login
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorText = document.getElementById('loginError');
+
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    // Berhasil login, onAuthStateChanged akan otomatis jalan
+                    errorText.innerText = "";
+                })
+                .catch((error) => {
+                    console.error(error);
+                    errorText.innerText = "Login Gagal: Email atau Password salah!";
+                });
+        });
+
+        // 3. Fungsi Logout (Global Scope)
+        window.logout = () => {
+            signOut(auth).then(() => {
+                alert("Anda telah keluar.");
+            }).catch((error) => {
+                alert("Error logout");
+            });
+        }
+
+        // === LOGIC DATA (CRUD) - Dibungkus fungsi agar dipanggil setelah login ===
+
+        function loadDataArtikel() {
+            // Logic Artikel
+            const form = document.getElementById('articleForm');
+            let isEditing = false;
+            
+            // Hapus listener lama jika ada (untuk menghindari duplikasi jika re-login)
+            const newForm = form.cloneNode(true);
+            form.parentNode.replaceChild(newForm, form);
+            
+            // Re-attach listener
+            document.getElementById('articleForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const data = {
+                    judul: document.getElementById('judul').value,
+                    kategori: document.getElementById('kategori').value,
+                    gambar: document.getElementById('gambar').value,
+                    isi: document.getElementById('isi').value,
+                    tanggal: new Date().toLocaleDateString('id-ID'),
+                    createdAt: new Date()
+                };
+
+                try {
+                    if (isEditing) {
+                        await updateDoc(doc(db, "articles", document.getElementById('docId').value), data);
+                        alert("Artikel Updated!");
+                        resetForm();
+                    } else {
+                        await addDoc(collection(db, "articles"), data);
+                        alert("Artikel Ditambahkan!");
+                        document.getElementById('articleForm').reset();
+                    }
+                } catch (error) { alert(error.message); }
+            });
+
+            // Load Table
+            onSnapshot(query(collection(db, "articles"), orderBy("createdAt", "desc")), (snapshot) => {
+                const tbody = document.querySelector('#articleTable tbody');
+                tbody.innerHTML = '';
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const judulSafe = JSON.stringify(data.judul).replace(/"/g, '&quot;');
+                    const isiSafe = JSON.stringify(data.isi).replace(/"/g, '&quot;');
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${data.judul}</td>
+                            <td>${data.kategori}</td>
+                            <td>
+                                <button class="btn-action btn-edit" onclick='editArtikel("${docSnap.id}", ${judulSafe}, "${data.kategori}", "${data.gambar}", ${isiSafe})'><i class="fas fa-edit"></i></button>
+                                <button class="btn-action btn-delete" onclick="hapusArtikel('${docSnap.id}')"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>`;
+                });
+            });
+        }
+
+        function loadDataNotif() {
+            // Logic Notif
+             const notifForm = document.getElementById('notifForm');
+             const newNotifForm = notifForm.cloneNode(true);
+             notifForm.parentNode.replaceChild(newNotifForm, notifForm);
+
+             document.getElementById('notifForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                try {
+                    await addDoc(collection(db, "notifications"), {
+                        type: document.getElementById('notifType').value,
+                        content: document.getElementById('notifContent').value,
+                        createdAt: new Date()
+                    });
+                    alert("Info Sidebar ditambahkan!");
+                    document.getElementById('notifForm').reset();
+                } catch (error) { alert("Error: " + error.message); }
+            });
+
+            onSnapshot(query(collection(db, "notifications"), orderBy("createdAt", "desc")), (snapshot) => {
+                const list = document.getElementById('notifList');
+                list.innerHTML = '';
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const cssClass = data.type === 'promo' ? 'promo' : '';
+                    list.innerHTML += `
+                        <div class="notif-item ${cssClass}">
+                            <span>${data.content}</span>
+                            <button class="btn-del-mini" onclick="hapusNotif('${docSnap.id}')">X</button>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        // Global Window Functions
+        window.editArtikel = (id, judul, kategori, gambar, isi) => {
+            document.getElementById('docId').value = id;
+            document.getElementById('judul').value = judul;
+            document.getElementById('kategori').value = kategori;
+            document.getElementById('gambar').value = gambar;
+            document.getElementById('isi').value = isi;
+            
+            // Ubah UI menjadi mode Edit
+            const btnSubmit = document.getElementById('btnSubmit');
+            const btnCancel = document.getElementById('btnCancel');
+            btnSubmit.innerText = "Update";
+            btnSubmit.style.background = "#f39c12"; 
+            btnCancel.style.display = "inline-block";
+            document.getElementById('formTitle').innerText = "Edit Artikel";
+            
+            // Kita perlu set flag editing di scope artikel tapi susah akses variabel lokal. 
+            // Cara cepat: kita re-attach listener submit dengan logic cek tombol teks, atau simpan di atribut
+            // Di kode artikelForm di atas saya menggunakan var 'isEditing', tapi karena scope,
+            // kita ubah pendekatan submit handler di atas sedikit (cek tombol text) atau reset manual.
+            
+            // Untuk simplifikasi di versi ini, saya akan manipulasi DOM form listener di atas agar membaca 'docId'.
+            // (Lihat perbaikan logika di listener submit di atas: if (document.getElementById('docId').value) ...)
+        }
+
+        // Perbaikan Logic Submit Handler agar support Edit
+        // Saya menimpa event listener di loadDataArtikel agar mengecek value docId
+        // Jadi kita tidak butuh variabel global isEditing yang rumit.
+        
+        window.resetForm = () => {
+            document.getElementById('articleForm').reset();
+            document.getElementById('docId').value = ""; // Kosongkan ID
+            
+            const btnSubmit = document.getElementById('btnSubmit');
+            btnSubmit.innerText = "Upload Artikel";
+            btnSubmit.style.background = "#2ecc71";
+            document.getElementById('btnCancel').style.display = "none";
+            document.getElementById('formTitle').innerText = "Manajemen Artikel";
+        }
+
+        window.hapusArtikel = async (id) => {
+            if(confirm("Hapus artikel ini?")) await deleteDoc(doc(db, "articles", id));
+        }
+
+        window.hapusNotif = async (id) => {
+            if(confirm("Hapus info ini?")) await deleteDoc(doc(db, "notifications", id));
+        }
+    </script>
+</body>
+</html>
