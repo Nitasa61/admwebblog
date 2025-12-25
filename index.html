@@ -64,7 +64,7 @@
             </div>
             <ul class="menu">
                 <li><a href="#"><i class="fas fa-newspaper"></i> Dashboard</a></li>
-                <li><a href="index.html" target="_blank"><i class="fas fa-external-link-alt"></i> Lihat Blog</a></li>
+                <li><a href="https://username.github.io/repo-blog-kamu/" target="_blank"><i class="fas fa-external-link-alt"></i> Lihat Blog</a></li>
                 <li style="margin-top: 20px; border-top: 1px solid #34495e;">
                     <a onclick="logout()" style="color: #e74c3c;"><i class="fas fa-sign-out-alt"></i> Logout</a>
                 </li>
@@ -161,7 +161,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         
-        window.articlesCache = {}; // Cache untuk menyimpan data agar edit tidak error
+        window.articlesCache = {}; 
 
         var quill = new Quill('#editor-container', {
             theme: 'snow',
@@ -221,11 +221,11 @@
             onSnapshot(query(collection(db, "articles"), orderBy("createdAt", "desc")), (snapshot) => {
                 const tbody = document.querySelector('#articleTable tbody');
                 tbody.innerHTML = '';
-                window.articlesCache = {}; // Reset cache
+                window.articlesCache = {}; 
 
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.data();
-                    window.articlesCache[docSnap.id] = data; // Simpan ke cache
+                    window.articlesCache[docSnap.id] = data; 
 
                     tbody.innerHTML += `
                         <tr>
