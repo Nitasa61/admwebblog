@@ -6,15 +6,15 @@
     <title>Admin Panel - F.A HydroFarm</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+
     <style>
-        /* (Style css sama persis seperti sebelumnya) */
         :root { --primary-color: #2ecc71; --secondary-color: #27ae60; --dark-bg: #2c3e50; --light-bg: #ecf0f1; --white: #ffffff; --danger: #e74c3c; --warning: #f39c12; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--light-bg); height: 100vh; overflow: hidden; }
 
         #login-view { display: flex; justify-content: center; align-items: center; height: 100vh; background: linear-gradient(135deg, var(--secondary-color), var(--primary-color)); }
         .login-card { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 100%; max-width: 400px; text-align: center; }
-        .login-card h2 { margin-bottom: 20px; color: var(--text-dark); }
         .login-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px; }
         .btn-login { width: 100%; padding: 12px; background: var(--secondary-color); color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         
@@ -36,11 +36,9 @@
         th, td { padding: 15px; border-bottom: 1px solid #eee; text-align: left; word-wrap: break-word; overflow-wrap: break-word; }
         .btn-action { border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; color: white; margin-right: 5px; }
         .btn-edit { background: var(--warning); } .btn-delete { background: var(--danger); }
-        
         .notif-item { background: #f8f9fa; border-left: 4px solid var(--primary-color); padding: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: start; font-size: 0.9rem; }
-        .notif-item.promo { border-color: var(--warning); background: #fcf3cf; }
-        .btn-del-mini { background: #ff7675; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 0.7rem; margin-left: 5px; }
-
+        
+        #editor-container { height: 250px; background: white; }
         @media (max-width: 1024px) { .admin-grid { grid-template-columns: 1fr; } #dashboard-view { flex-direction: column; } .sidebar { width: 100%; height: auto; } }
     </style>
 </head>
@@ -51,7 +49,7 @@
             <img src="logo.png" alt="Logo" style="height: 60px; margin-bottom: 20px;">
             <h2>Admin Login</h2>
             <form id="loginForm">
-                <input type="email" id="email" class="login-input" placeholder="Email Admin" required>
+                <input type="email" id="email" class="login-input" placeholder="Email" required>
                 <input type="password" id="password" class="login-input" placeholder="Password" required>
                 <button type="submit" class="btn-login">Masuk</button>
             </form>
@@ -76,7 +74,6 @@
 
         <main class="main-content">
             <div class="admin-grid">
-                
                 <div class="left-column">
                     <div class="content-section">
                         <h3 style="margin-bottom: 20px;" id="formTitle">Manajemen Artikel</h3>
@@ -102,7 +99,7 @@
                             </div>
                             <div class="form-group">
                                 <label>Isi Artikel</label>
-                                <textarea id="isi" rows="6" required></textarea>
+                                <div id="editor-container"></div>
                             </div>
                             <div style="display: flex;">
                                 <button type="submit" class="btn-add" id="btnSubmit">Upload Artikel</button>
@@ -110,7 +107,6 @@
                             </div>
                         </form>
                     </div>
-
                     <div class="content-section">
                         <h3>Daftar Artikel</h3>
                         <table id="articleTable">
@@ -125,17 +121,13 @@
                         </table>
                     </div>
                 </div>
-
                 <div class="right-column">
                     <div class="content-section" style="background-color: #e8f8f5;">
-                        <h3 style="margin-bottom: 15px;"><i class="fas fa-bullhorn"></i> Pemberitahuan Sidebar</h3>
+                        <h3 style="margin-bottom: 15px;">Pemberitahuan Sidebar</h3>
                         <form id="notifForm">
                             <div class="form-group">
                                 <label>Jenis Info</label>
-                                <select id="notifType">
-                                    <option value="info">Info Hijau (Umum)</option>
-                                    <option value="promo">Info Kuning (Promo/Penting)</option>
-                                </select>
+                                <select id="notifType"><option value="info">Info Hijau</option><option value="promo">Info Kuning</option></select>
                             </div>
                             <div class="form-group">
                                 <label>Isi Pesan</label>
@@ -143,16 +135,14 @@
                             </div>
                             <button type="submit" class="btn-add" style="background-color: var(--secondary-color);">Tambah Info</button>
                         </form>
-                        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;">
-                        <h4>Info Aktif:</h4>
-                        <div id="notifList" style="margin-top: 10px;"></div>
+                        <div id="notifList" style="margin-top: 20px;"></div>
                     </div>
                 </div>
-
             </div>
         </main>
     </div>
 
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
@@ -171,6 +161,14 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
+        
+        // GLOBAL DATA STORE (Agar tidak error saat Edit HTML)
+        window.articlesCache = {};
+
+        var quill = new Quill('#editor-container', {
+            theme: 'snow',
+            modules: { toolbar: [[{ 'header': [1, 2, 3, false] }], ['bold', 'italic', 'underline', 'strike'], [{ 'color': [] }, { 'background': [] }], [{ 'list': 'ordered'}, { 'list': 'bullet' }], ['link', 'clean']] }
+        });
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -187,28 +185,14 @@
 
         document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorText = document.getElementById('loginError');
-
-            signInWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    errorText.innerText = "";
-                })
-                .catch((error) => {
-                    console.error(error);
-                    errorText.innerText = "Login Gagal: Email atau Password salah!";
-                });
+            signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value)
+                .catch((error) => document.getElementById('loginError').innerText = "Login Gagal!");
         });
 
-        window.logout = () => {
-            signOut(auth).then(() => { alert("Anda telah keluar."); }).catch((error) => { alert("Error logout"); });
-        }
+        window.logout = () => signOut(auth).then(() => alert("Logged out"));
 
         function loadDataArtikel() {
             const form = document.getElementById('articleForm');
-            let isEditing = false;
-            
             const newForm = form.cloneNode(true);
             form.parentNode.replaceChild(newForm, form);
             
@@ -218,11 +202,10 @@
                     judul: document.getElementById('judul').value,
                     kategori: document.getElementById('kategori').value,
                     gambar: document.getElementById('gambar').value,
-                    isi: document.getElementById('isi').value,
+                    isi: quill.root.innerHTML, // Simpan HTML
                     tanggal: new Date().toLocaleDateString('id-ID'),
                     createdAt: new Date()
                 };
-
                 try {
                     const docId = document.getElementById('docId').value;
                     if (docId) {
@@ -232,7 +215,7 @@
                     } else {
                         await addDoc(collection(db, "articles"), data);
                         alert("Artikel Ditambahkan!");
-                        document.getElementById('articleForm').reset();
+                        resetForm();
                     }
                 } catch (error) { alert(error.message); }
             });
@@ -240,17 +223,20 @@
             onSnapshot(query(collection(db, "articles"), orderBy("createdAt", "desc")), (snapshot) => {
                 const tbody = document.querySelector('#articleTable tbody');
                 tbody.innerHTML = '';
+                // Reset cache
+                window.articlesCache = {};
+
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.data();
-                    const judulSafe = JSON.stringify(data.judul).replace(/"/g, '&quot;');
-                    const isiSafe = JSON.stringify(data.isi).replace(/"/g, '&quot;');
-                    
+                    // Simpan data di memori global berdasarkan ID
+                    window.articlesCache[docSnap.id] = data;
+
                     tbody.innerHTML += `
                         <tr>
                             <td>${data.judul}</td>
                             <td>${data.kategori}</td>
                             <td>
-                                <button class="btn-action btn-edit" onclick='editArtikel("${docSnap.id}", ${judulSafe}, "${data.kategori}", "${data.gambar}", ${isiSafe})'><i class="fas fa-edit"></i></button>
+                                <button class="btn-action btn-edit" onclick="editArtikel('${docSnap.id}')"><i class="fas fa-edit"></i></button>
                                 <button class="btn-action btn-delete" onclick="hapusArtikel('${docSnap.id}')"><i class="fas fa-trash"></i></button>
                             </td>
                         </tr>`;
@@ -265,15 +251,13 @@
 
              document.getElementById('notifForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                try {
-                    await addDoc(collection(db, "notifications"), {
-                        type: document.getElementById('notifType').value,
-                        content: document.getElementById('notifContent').value,
-                        createdAt: new Date()
-                    });
-                    alert("Info Sidebar ditambahkan!");
-                    document.getElementById('notifForm').reset();
-                } catch (error) { alert("Error: " + error.message); }
+                await addDoc(collection(db, "notifications"), {
+                    type: document.getElementById('notifType').value,
+                    content: document.getElementById('notifContent').value,
+                    createdAt: new Date()
+                });
+                alert("Info Sidebar ditambahkan!");
+                document.getElementById('notifForm').reset();
             });
 
             onSnapshot(query(collection(db, "notifications"), orderBy("createdAt", "desc")), (snapshot) => {
@@ -282,22 +266,23 @@
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.data();
                     const cssClass = data.type === 'promo' ? 'promo' : '';
-                    list.innerHTML += `
-                        <div class="notif-item ${cssClass}">
-                            <span>${data.content}</span>
-                            <button class="btn-del-mini" onclick="hapusNotif('${docSnap.id}')">X</button>
-                        </div>
-                    `;
+                    list.innerHTML += `<div class="notif-item ${cssClass}"><span>${data.content}</span><button class="btn-del-mini" onclick="hapusNotif('${docSnap.id}')">X</button></div>`;
                 });
             });
         }
 
-        window.editArtikel = (id, judul, kategori, gambar, isi) => {
+        // FUNGSI EDIT YANG AMAN DARI BUG HTML
+        window.editArtikel = (id) => {
+            const data = window.articlesCache[id]; // Ambil data dari memori
+            if (!data) return alert("Error: Data tidak ditemukan di memori");
+
             document.getElementById('docId').value = id;
-            document.getElementById('judul').value = judul;
-            document.getElementById('kategori').value = kategori;
-            document.getElementById('gambar').value = gambar;
-            document.getElementById('isi').value = isi;
+            document.getElementById('judul').value = data.judul;
+            document.getElementById('kategori').value = data.kategori;
+            document.getElementById('gambar').value = data.gambar;
+            
+            // Masukkan HTML ke Quill
+            quill.root.innerHTML = data.isi;
             
             const btnSubmit = document.getElementById('btnSubmit');
             const btnCancel = document.getElementById('btnCancel');
@@ -309,6 +294,7 @@
 
         window.resetForm = () => {
             document.getElementById('articleForm').reset();
+            quill.setText(''); // Kosongkan editor
             document.getElementById('docId').value = ""; 
             const btnSubmit = document.getElementById('btnSubmit');
             btnSubmit.innerText = "Upload Artikel";
@@ -317,13 +303,8 @@
             document.getElementById('formTitle').innerText = "Manajemen Artikel";
         }
 
-        window.hapusArtikel = async (id) => {
-            if(confirm("Hapus artikel ini?")) await deleteDoc(doc(db, "articles", id));
-        }
-
-        window.hapusNotif = async (id) => {
-            if(confirm("Hapus info ini?")) await deleteDoc(doc(db, "notifications", id));
-        }
+        window.hapusArtikel = async (id) => { if(confirm("Hapus artikel ini?")) await deleteDoc(doc(db, "articles", id)); }
+        window.hapusNotif = async (id) => { if(confirm("Hapus info ini?")) await deleteDoc(doc(db, "notifications", id)); }
     </script>
 </body>
 </html>
